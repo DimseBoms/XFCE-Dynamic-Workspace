@@ -3,7 +3,7 @@
 from gi.repository import Wnck, Gtk, Notify
 import signal
 import os
-
+import subprocess
 
 class workspaceIndicator:
 
@@ -31,7 +31,7 @@ class workspaceIndicator:
         except:
             workspace_num = None
         if workspace_num:
-            self.popup.update(f"Arbeidsområde {workspace_num}")
+            self.popup.update(f"Workspace {workspace_num}")
             self.popup.show()
 
     # Main logic for handling of dynamic workspaces
@@ -46,15 +46,15 @@ class workspaceIndicator:
         if workspaces:
             last = 0
             next_last = 0
-            # Calls the function to remove blacklisted windows
+            # Removes blacklisted windows from the list of visible windows
             windows = self.remove_blacklist(self.screen.get_windows())
             # Counts windows
-            #print('\n[List of windows currently not blacklisted]:\n')
             for window in windows:
-                # print(window.get_name())
+                # Checks if the window is on the last workspace
                 if window.is_on_workspace(workspaces[-1]):
                     last += 1
                 if workspaces_len > 1:
+                    # Checks if the window is on the workspace before the last
                     if window.is_on_workspace(workspaces[-2]):
                         next_last += 1
             # Main logical operations for removing last/last two workspaces
@@ -69,21 +69,20 @@ class workspaceIndicator:
             workspaces_len = len(workspaces)
         except:
             workspaces = None
-        # Initiate logic to remove windowless workspaces at the start/in the middle
-        #if workspaces_len > 1:
-        #    windows = self.remove_blacklist(self.screen.get_windows())
-        #    if workspaces:
-        #        crunch = {}
-        #        i = 0
-        #    for window in windows:
-        #        if window.get_workspace() not in crunch:
-        #            crunch[window.get_workspace()] = [
-        #                window]
-        #        else:
-        #            crunch[window.get_workspace()].append(
-        #                window)
-        #    # Passing list of windows and their respective workspaces to the crunch function
-        #    self.crunch_workspace(crunch, workspaces)
+        # If there are more than 2 workspaces, iterate through all the workspaces
+        # except the last one and check if they are empty. If they are, remove them.
+        if workspaces_len > 2:
+            windows = self.remove_blacklist(self.screen.get_windows())
+            for i, workspace in enumerate(workspaces[:-1]):
+                if self.screen.get_active_workspace() is not workspace and self.screen.get_workspaces()[-1] is not workspace:
+                    workspace_empty = True
+                    for window in windows:
+                        if window.is_on_workspace(workspace):
+                            workspace_empty = False
+                            break
+                    if workspace_empty:
+                        if not (workspace == self.screen.get_workspaces()[-1]):
+                            self.remove_workspace_by_index(i)
 
     # Removes blacklisted windows from the list of visible windows
     def remove_blacklist(self, windows):
@@ -95,41 +94,38 @@ class workspaceIndicator:
             i += 1
         return windows
 
-    # Moves all windows from the workspace next to the selected workspace to
-    # the last workpsace one workspace to the left.
-    #def move_windows(self, workspace, windows):
-    #    pass
-
     # Functions for handling adding/removal of workspaces. These functions just work as
     # an interface to send shell commands with wmctrl.
     def add_workspace(self, workspaces_len):
         os.system(f"wmctrl -n {workspaces_len + 1}")
 
     def pop_workspace(self, workspaces_len):
-        os.system(f"wmctrl -n {workspaces_len - 1}")
+        if len(self.screen.get_workspaces()) > 2:
+            os.system(f"wmctrl -n {workspaces_len - 1}")
 
-    # Logic for checking workspaces at the start/in the middle
-    #def crunch_workspace(self, crunch, workspaces):
-    #    ws_len = len(workspaces)
-    #    i = 0
-    #    while ws_len >= 2 and i <= ws_len:
-    #        print(f'ws_len: {ws_len}\ni: {i}')
-    #        workspace = workspaces[i]
-    #        if workspace not in crunch and self.screen.get_active_workspace() is not workspace:
-    #            self.move_windows(workspace, self.remove_blacklist(self.screen.get_windows()))
-    #            self.pop_workspace(ws_len)
-    #            i-=1
-    #            ws_len-=1
-    #        i+=1
-    #        if ws_len == 2:
-    #            break
+    # Removes a workspace by index using wmctrl
+    def remove_workspace_by_index(self, index):
+        # Get current workspaces using wmctrl
+        workspaces = subprocess.check_output("wmctrl -d", shell=True).decode("utf-8").splitlines()
+        # Get current windows and their workspaces
+        windows = self.screen.get_windows()
+        # Filter out the windows that don't have workspaces or are on any workspace
+        # on a lower index than the workspace to be removed
+        windows = [window for window in windows if window.get_workspace() is not None and window.get_workspace().get_number() > index]
+        for window in windows:
+            # Move the windows that are left one workspace to the left
+            window.move_to_workspace(self.screen.get_workspaces()[window.get_workspace().get_number() - 1])
+        self.pop_workspace(len(workspaces))
+        os.popen(f"wmctrl -s {index}")
 
     # Assigns functions to Wnck.Screen signals. Check out the API docs at
     # "http://lazka.github.io/pgi-docs/index.html#Wnck-3.0/classes/Screen.html"
     def main(self):
-        os.system("wmctrl -n 1")
+        os.system("wmctrl -n 1")  # Resets the amount of workspaces to 1
         self.screen.connect("active-workspace-changed", self.fire_switch)
         self.screen.connect("active-workspace-changed", self.dynamic_workspace)
+        self.screen.connect("workspace-created", self.dynamic_workspace)
+        self.screen.connect("workspace-destroyed", self.dynamic_workspace)
         self.screen.connect("window-opened", self.dynamic_workspace)
         self.screen.connect("window-closed", self.dynamic_workspace)
         Gtk.main()
