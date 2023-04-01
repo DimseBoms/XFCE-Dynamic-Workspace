@@ -8,13 +8,14 @@ This project has only been tested on XFCE, but it should work on other desktop e
 
 ## Installation:
 ```bash
-# Clone the repository:
-
-git clone https://github.com/DimseBoms/XFCE-Dynamic-Workspace
 
 # Install the required dependencies:
 
 sudo apt install python3-gi wmctrl
+
+# Clone the repository:
+
+git clone https://github.com/DimseBoms/XFCE-Dynamic-Workspace
 
 # Usage
 
