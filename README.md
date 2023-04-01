@@ -2,7 +2,7 @@
 This project aims to provide XFCE with dynamic workspaces similar to those found in the GNOME desktop environment. Use in conjunction with Xfdashboard and you got yourself a Gnome lite.
 
 ## Compatibility
-This project has only been tested on XFCE, but it should work on other desktop environments as long as they are compatible with wnck and wmctrl. If there are issues with windows that should not be taken into consideration (panels, docks, etc) when handling workspaces, they can be added to the blacklist inside the script itself (self.window_blacklist).
+This project has only been tested on XFCE, but it should work on other desktop environments as long as they are compatible with wnck and wmctrl. If there are issues with windows that should not be taken into consideration (panels, docks, etc) when handling workspaces, they can be added to the blacklist inside the script itself (self.window_blacklist). It will only work on X11 though as libwnck and wmctrl do not support wayland.
 
 ## Installation:
 ```bash
