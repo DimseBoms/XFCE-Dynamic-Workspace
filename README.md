@@ -18,7 +18,7 @@ sudo apt install python3-gi wmctrl
 
 # Usage
 
-python3 /path/to/script/dynamic_workspaces.py
+python3 ./XFCE-Dynamic-Workspace/dynamic_workspaces.py
 ```
 
 ## Add the script to autostart:
