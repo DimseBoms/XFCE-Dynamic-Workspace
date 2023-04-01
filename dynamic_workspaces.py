@@ -14,7 +14,10 @@ class workspaceIndicator:
             "Desktop",
             "xfdashboard",
             "xfce4-panel",
-            "plank"]
+            "plank",
+            "xfce4-notifyd",
+            "Whisker Menu"
+        ]
         self.first = True
         signal.signal(signal.SIGINT, signal.SIG_DFL)
         self.screen = Wnck.Screen.get_default()
@@ -88,6 +91,7 @@ class workspaceIndicator:
     def remove_blacklist(self, windows):
         i = 0
         while len(windows) > i:
+            print(windows[i].get_name())
             if windows[i].get_name() in self.window_blacklist:
                 windows.pop(i)
                 i -= 1
