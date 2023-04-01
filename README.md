@@ -7,10 +7,10 @@ This project has only been tested on XFCE, but it should work on other desktop e
 ## Installation:
 ```bash
 # Install the required dependencies:
-# Ubuntu
-sudo apt install python3-gi wmctrl
+# Ubuntu/Debian
+sudo apt install python3-gi libwnck-3.0 wmctrl
 # Fedora
-sudo dnf install python3-gobject wmctrl
+sudo dnf install python3-gobject libwnck wmctrl
 
 # Clone the repository:
 git clone https://github.com/DimseBoms/XFCE-Dynamic-Workspace
