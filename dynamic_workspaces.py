@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 
+import gi
+gi.require_version('Wnck', '3.0')
+gi.require_version('Gtk', '3.0')
+gi.require_version('Notify', '0.7')
 from gi.repository import Wnck, Gtk, Notify
 import signal
 import os
 import subprocess
+
 
 class workspaceIndicator:
 
@@ -91,7 +96,7 @@ class workspaceIndicator:
     def remove_blacklist(self, windows):
         i = 0
         while len(windows) > i:
-            print(windows[i].get_name())
+            # print(windows[i].get_name())
             if windows[i].get_name() in self.window_blacklist:
                 windows.pop(i)
                 i -= 1
