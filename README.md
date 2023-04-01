@@ -1,6 +1,6 @@
 # XFCE Dynamic Workspaces
 
-This project aims to provide XFCE with dynamic workspaces similar to those found in the GNOME desktop environment.
+This project aims to provide XFCE with dynamic workspaces similar to those found in the GNOME desktop environment. Use in conjunction with Xfdashboard and you got yourself a Gnome lite.
 
 ## Compatibility
 
@@ -8,17 +8,18 @@ This project has only been tested on XFCE, but it should work on other desktop e
 
 ## Installation:
 ```bash
-# Clone the repository:
-
-git clone https://github.com/DimseBoms/XFCE-Dynamic-Workspace
 
 # Install the required dependencies:
 
 sudo apt install python3-gi wmctrl
 
+# Clone the repository:
+
+git clone https://github.com/DimseBoms/XFCE-Dynamic-Workspace
+
 # Usage
 
-python3 /path/to/script/dynamic_workspaces.py
+python3 ./XFCE-Dynamic-Workspace/dynamic_workspaces.py
 ```
 
 ## Add the script to autostart:
