@@ -8,12 +8,13 @@ from gi.repository import Wnck, Gtk, Notify
 import signal
 import os
 import subprocess
+import sys
 
 
-class workspaceIndicator:
-
+class DynamicWorkspaces:
     # Self initialization
-    def __init__(self):
+    def __init__(self, DEBUG=False):
+        self.DEBUG = DEBUG
         self.window_blacklist = [
             "Skrivebord",
             "Desktop",
@@ -23,7 +24,6 @@ class workspaceIndicator:
             "xfce4-notifyd",
             "Whisker Menu"
         ]
-        self.first = True
         signal.signal(signal.SIGINT, signal.SIG_DFL)
         self.screen = Wnck.Screen.get_default()
         self.popup = Notify.Notification.new("")
@@ -31,7 +31,7 @@ class workspaceIndicator:
         Notify.init("Workspace Switch Notifier")
 
     # Notification handling
-    def fire_switch(self, in_screen, in_previously_active_workspace):
+    def update_notification(self, in_screen, in_previously_active_workspace):
         # Gets the current amount of workspaces
         try:
             workspace_num = str(
@@ -43,7 +43,7 @@ class workspaceIndicator:
             self.popup.show()
 
     # Main logic for handling of dynamic workspaces
-    def dynamic_workspace(self, in_screen, in_window):
+    def handle_dynamic_workspace(self, in_screen, in_window):
         # Gets the current workspaces
         try:
             workspaces = self.screen.get_workspaces()
@@ -101,6 +101,9 @@ class workspaceIndicator:
                 windows.pop(i)
                 i -= 1
             i += 1
+        if self.DEBUG:
+            for window in windows:
+                print(window.get_name())
         return windows
 
     # Functions for handling adding/removal of workspaces. These functions just work as
@@ -129,19 +132,24 @@ class workspaceIndicator:
 
     # Assigns functions to Wnck.Screen signals. Check out the API docs at
     # "http://lazka.github.io/pgi-docs/index.html#Wnck-3.0/classes/Screen.html"
-    def main(self):
+    def connect_signals(self):
         os.system("wmctrl -n 1")  # Resets the amount of workspaces to 1
-        self.screen.connect("active-workspace-changed", self.fire_switch)
-        self.screen.connect("active-workspace-changed", self.dynamic_workspace)
-        self.screen.connect("workspace-created", self.dynamic_workspace)
-        self.screen.connect("workspace-destroyed", self.dynamic_workspace)
-        self.screen.connect("window-opened", self.dynamic_workspace)
-        self.screen.connect("window-closed", self.dynamic_workspace)
+        self.screen.connect("active-workspace-changed", self.update_notification)
+        self.screen.connect("active-workspace-changed", self.handle_dynamic_workspace)
+        self.screen.connect("workspace-created", self.handle_dynamic_workspace)
+        self.screen.connect("workspace-destroyed", self.handle_dynamic_workspace)
+        self.screen.connect("window-opened", self.handle_dynamic_workspace)
+        self.screen.connect("window-closed", self.handle_dynamic_workspace)
         Gtk.main()
 
 
 # Starts the program
 if __name__ == '__main__':
+    DEBUG = False
+    for arg in sys.argv:
+        if arg == "--debug":
+            print("Debug mode enabled")
+            DEBUG = True
     print("Started workspace indicator")
-    indicator = workspaceIndicator()
-    indicator.main()
+    workspace_handler = DynamicWorkspaces(DEBUG)
+    workspace_handler.connect_signals()
