@@ -103,7 +103,7 @@ class DynamicWorkspaces:
             if windows[i].get_name() in self.window_blacklist:
                 windows.pop(i)
                 i -= 1
-            if windows[i].get_role() is not None:
+            elif windows[i].get_role() is not None:
                 #if windows[i].get_class_instance_name()+'.'+windows[i].get_role() in self.window_classrole_blacklist:
                 if '.'.join((windows[i].get_class_instance_name(), windows[i].get_role())) in self.window_classrole_blacklist:
                     windows.pop(i)
