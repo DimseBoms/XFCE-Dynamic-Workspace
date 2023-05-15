@@ -43,7 +43,11 @@ class DynamicWorkspaces:
             workspace_num = None
         if workspace_num:
             self.popup.update(f"Workspace {workspace_num}")
-            self.popup.show()
+            try:
+                # Try to activate, but in some cases (like screensaver), this can't be done.
+                self.popup.show()
+            except:
+                pass
 
     # Main logic for handling of dynamic workspaces
     def handle_dynamic_workspace(self, in_screen, in_window):
