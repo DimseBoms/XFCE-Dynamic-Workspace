@@ -24,6 +24,9 @@ class DynamicWorkspaces:
             "xfce4-notifyd",
             "Whisker Menu"
         ]
+        self.window_classrole_blacklist = [
+            "tilix.quake"
+        ]
         signal.signal(signal.SIGINT, signal.SIG_DFL)
         self.screen = Wnck.Screen.get_default()
         self.popup = Notify.Notification.new("")
@@ -40,7 +43,11 @@ class DynamicWorkspaces:
             workspace_num = None
         if workspace_num:
             self.popup.update(f"Workspace {workspace_num}")
-            self.popup.show()
+            try:
+                # Try to activate, but in some cases (like screensaver), this can't be done.
+                self.popup.show()
+            except:
+                pass
 
     # Main logic for handling of dynamic workspaces
     def handle_dynamic_workspace(self, in_screen, in_window):
@@ -97,9 +104,16 @@ class DynamicWorkspaces:
         i = 0
         while len(windows) > i:
             # print(windows[i].get_name())
-            if windows[i].get_name() in self.window_blacklist:
+            if windows[i].is_sticky():
                 windows.pop(i)
                 i -= 1
+            elif windows[i].get_name() in self.window_blacklist:
+                windows.pop(i)
+                i -= 1
+            elif windows[i].get_role() is not None:
+                if '.'.join((windows[i].get_class_instance_name(), windows[i].get_role())) in self.window_classrole_blacklist:
+                    windows.pop(i)
+                    i -= 1
             i += 1
         if self.DEBUG:
             for window in windows:
