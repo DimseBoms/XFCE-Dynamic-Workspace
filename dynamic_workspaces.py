@@ -13,8 +13,9 @@ import sys
 
 class DynamicWorkspaces:
     # Self initialization
-    def __init__(self, DEBUG=False):
+    def __init__(self, DEBUG=False, NOTIFY=True):
         self.DEBUG = DEBUG
+        self.NOTIFY = NOTIFY
         self.window_blacklist = [
             "Skrivebord",
             "Desktop",
@@ -30,9 +31,10 @@ class DynamicWorkspaces:
         self.last = 0
         signal.signal(signal.SIGINT, signal.SIG_DFL)
         self.screen = Wnck.Screen.get_default()
-        self.popup = Notify.Notification.new("")
-        self.popup.set_timeout(1)
-        Notify.init("Workspace Switch Notifier")
+        if self.NOTIFY:
+            self.popup = Notify.Notification.new("")
+            self.popup.set_timeout(1)
+            Notify.init("Workspace Switch Notifier")
 
     # Notification handling
     def update_notification(self, in_screen, in_previously_active_workspace):
@@ -162,7 +164,8 @@ class DynamicWorkspaces:
     # "http://lazka.github.io/pgi-docs/index.html#Wnck-3.0/classes/Screen.html"
     def connect_signals(self):
         os.system("wmctrl -n 1")  # Resets the amount of workspaces to 1
-        self.screen.connect("active-workspace-changed", self.update_notification)
+        if self.NOTIFY:
+            self.screen.connect("active-workspace-changed", self.update_notification)
         self.screen.connect("active-workspace-changed", self.handle_dynamic_workspace)
         self.screen.connect("workspace-created", self.handle_dynamic_workspace)
         self.screen.connect("workspace-destroyed", self.handle_dynamic_workspace)
@@ -174,10 +177,14 @@ class DynamicWorkspaces:
 # Starts the program
 if __name__ == '__main__':
     DEBUG = False
+    NOTIFY = True
     for arg in sys.argv:
         if arg == "--debug":
             print("Debug mode enabled")
             DEBUG = True
+        elif arg == "--no-notify":
+            print("Notifications disabled")
+            NOTIFY = False
     print("Started workspace indicator")
-    workspace_handler = DynamicWorkspaces(DEBUG)
+    workspace_handler = DynamicWorkspaces(DEBUG, NOTIFY)
     workspace_handler.connect_signals()
