@@ -155,9 +155,8 @@ class DynamicWorkspaces:
             window.move_to_workspace(self.screen.get_workspaces()[window.get_workspace().get_number() - 1])
         self.pop_workspace(len(workspaces))
         # Make sure you stay on the workspace
-        if workspace_num != None:
-            if self.last < workspace_num:
-                os.popen(f"wmctrl -s {index}")
+        if workspace_num and self.last < workspace_num:
+            os.popen(f"wmctrl -s {index}")
 
     # Assigns functions to Wnck.Screen signals. Check out the API docs at
     # "http://lazka.github.io/pgi-docs/index.html#Wnck-3.0/classes/Screen.html"
