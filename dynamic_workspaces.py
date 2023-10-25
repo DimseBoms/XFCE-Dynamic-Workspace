@@ -27,6 +27,7 @@ class DynamicWorkspaces:
         self.window_classrole_blacklist = [
             "tilix.quake"
         ]
+        self.last = 0
         signal.signal(signal.SIGINT, signal.SIG_DFL)
         self.screen = Wnck.Screen.get_default()
         self.popup = Notify.Notification.new("")
@@ -98,6 +99,11 @@ class DynamicWorkspaces:
                     if workspace_empty:
                         if not (workspace == self.screen.get_workspaces()[-1]):
                             self.remove_workspace_by_index(i)
+        # Update last workspace
+        try:
+            self.last = self.screen.get_active_workspace().get_number()
+        except AttributeError:
+            pass
 
     # Removes blacklisted windows from the list of visible windows
     def remove_blacklist(self, windows):
@@ -131,6 +137,12 @@ class DynamicWorkspaces:
 
     # Removes a workspace by index using wmctrl
     def remove_workspace_by_index(self, index):
+        # Get curent workspace number
+        workspace_num = None
+        try:
+            workspace_num = self.screen.get_active_workspace().get_number()
+        except AttributeError:
+            pass
         # Get current workspaces using wmctrl
         workspaces = subprocess.check_output("wmctrl -d", shell=True).decode("utf-8").splitlines()
         # Get current windows and their workspaces
@@ -142,7 +154,9 @@ class DynamicWorkspaces:
             # Move the windows that are left one workspace to the left
             window.move_to_workspace(self.screen.get_workspaces()[window.get_workspace().get_number() - 1])
         self.pop_workspace(len(workspaces))
-        os.popen(f"wmctrl -s {index}")
+        # Make sure you stay on the workspace
+        if workspace_num and self.last < workspace_num:
+            os.popen(f"wmctrl -s {index}")
 
     # Assigns functions to Wnck.Screen signals. Check out the API docs at
     # "http://lazka.github.io/pgi-docs/index.html#Wnck-3.0/classes/Screen.html"
